@@ -5,16 +5,20 @@ import random
 import os
 
 """
-specialBackwardTranslator = the swapping of special characters is not yet implemented
+Completed Items Here >>>>>
 
-theExplainer = For Explanations the spacings required like tabas and new lines + New line for every dot of explanation
+>>>>> specialBackwardTranslator = the swapping of special characters is not yet implemented
 
-readingTheFile = Save path used by first three tags
+>>>>> theExplainer = For Explanations the spacings required like tabas and new lines + New line for every dot of explanation
+
+>>>>> readingTheFile = Save path used by first three tags
+
+>>>>> Also single options is not supported
+
+>>>>> Currently there is no support for multi answer questions
 """
 
-
-# Currently there is no support for multi answer questions
-# Also single options is not supported
+# Remove the save tag
 # Ability to reset the entire data
 # Add a step question
 # combination of tags from menu
@@ -24,44 +28,19 @@ readingTheFile = Save path used by first three tags
 # Try and append if the save file path already exists
 # The settings for that questions should be saved
 
-def creatingAPathForSaving():
-    directory = "GeeksforGeeks"
-  
-    # Parent Directory path
-    parent_dir = "D:/Pycharm projects/"
-    
-    # Path
-    path = os.path.join(parent_dir, directory)
-    
-    # Create the directory
-    # 'GeeksForGeeks' in
-    # '/home / User / Documents'
-    os.mkdir(path)
-    print("Directory '% s' created" % directory)
-    
-    # Directory
-    directory = "Geeks"
-    
-    # Parent Directory path
-    parent_dir = "D:/Pycharm projects"
-    
-    # mode
-    mode = 0o666
-    
-    # Path
-    path = os.path.join(parent_dir, directory)
-    
-    # Create the directory
-    # 'GeeksForGeeks' in
-    # '/home / User / Documents'
-    # with mode 0o666
-    os.mkdir(path, mode)
-    print("Directory '% s' created" % directory)
 class Question:
     def __init__(self,ts,qs,a,o,e,t,c,w,tl):
         # Contains all the tags like S3 IAM etc
         # Tag = !
         self.tags = ts
+
+        # Contains all the questions with the
+        # Tag = ^
+        self.orderedAnswers = []
+
+        # Contains all the questions with the
+        # Tag = <
+        self.preQuestion = []
 
         # Contains all the questions with the
         # Tag = ?
@@ -134,13 +113,23 @@ class Question:
 
 
         tagger = "$"
-        strng = [""]
-        strng.append(self.answer)
+        strng = []
+        if len(self.answer) == 1:
+            strng = [""]
+            strng.extend(self.answer)
+        else:
+            strng = []
+            strng.extend(self.answer)
         save.append(tagger.join(strng))
 
         tagger = ">"
         strng = []
-        strng.extend(self.options)
+        if len(self.options) == 1:
+            strng = [""]
+            strng.extend(self.options)
+        else:
+            strng = []
+            strng.extend(self.options)
         save.append(tagger.join(strng))
 
         tagger = "@"
@@ -452,7 +441,7 @@ class TheFile:
         spl = []
         question = ""
         tags = []
-        answer = ""
+        answer = []
         option = []
         explanation = ""
         par = ""
@@ -495,7 +484,7 @@ class TheFile:
                         if j.find("$") != -1:
                             nsplit = j.split("$")
                             ans = self.cleanUpList(nsplit)
-                            answer = str(ans[0])
+                            answer = ans
 
                         if j.find(">") != -1:
                             nsplit = j.split(">")
@@ -541,7 +530,7 @@ class TheFile:
                             self.taglist.append(tts)
                     question = ""
                     tags = []
-                    answer = ""
+                    answer = []
                     option = []
                     explanation = ""
                     total = 0
@@ -580,14 +569,12 @@ class TheFile:
                     # Check if par is an answer
                     if splitComponents.find("$") != -1 and bad != 1:
                         nsplit = splitComponents.split("$")
-                        ans = nsplit[len(nsplit)-1]
+                        ans = self.cleanUpList(nsplit)
                         answer = ans
-                        option.append(answer)
                         nonComponentCount+=1
                     # Check if par is an option
                     if splitComponents.find(">") != -1 and bad != 1:
-                        for ops in splitComponents.split(">"):
-                            option.append(ops)
+                        option = self.cleanUpList(splitComponents.split(">"))
                         nonComponentCount+=1
                     # Check if par is an option
                     if splitComponents.find("@") != -1 and bad != 1:
@@ -599,11 +586,11 @@ class TheFile:
                 # Check if par is an option
                 if nonComponentCount == 5 and bad != 1:
                     self.qs.append(Question(tags,question,answer,option,explanation,0,0,0,0))
-                    print(tags)
-                    print(question)
-                    print(answer)
-                    print(option)
-                    print(explanation)
+                    #print(tags)
+                    #print(question)
+                    #print(answer)
+                    #print(option)
+                    #print(explanation)
                     self.qq.append(question)
                     for tts in tags:
                         if tts in self.tags:
@@ -615,7 +602,7 @@ class TheFile:
                             self.taglist.append(tts)
                     question = ""
                     tags = []
-                    answer = ""
+                    answer = []
                     option = []
                     explanation = ""
                     total = 0
@@ -663,11 +650,10 @@ def printii(pp):
         else:
             time.sleep(random.uniform(0,0.05))
 def askingAWS(q):
-    correct = 0
-    answer = ""
-    answersmall = ""
+    answer = []
+    answersmall = []
     myans = ""
-    answernumber = ""
+    answernumber = []
     print("\n\n")
     startime = time.time()
     #print(q.question)
@@ -675,8 +661,14 @@ def askingAWS(q):
     for ee in quesSplit:
         print(ee)
     print("\n")
-    opto = random.shuffle(q.options)
-    opto = q.options
+    generatedOptions = []
+    generatedOptions.extend(q.options)
+    #generatedOptions.extend(q.answer)
+    for qanswer in q.answer:
+        if qanswer not in q.options:
+            generatedOptions.append(qanswer)
+    opto = random.shuffle(generatedOptions)
+    opto = generatedOptions
     optList = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
     optlist = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p']
     optnumber = ['1','2','3','4','5','6','7','8','9',"10","11","12","13","14","15","16"]
@@ -684,6 +676,7 @@ def askingAWS(q):
 
     questionTimeLimitList = []
     questionTimeLimitList.extend(q.question)
+    allAnswerStack = []
 
     # Find the answer withing the options
     for i in opto:
@@ -692,11 +685,14 @@ def askingAWS(q):
         choicenumber = optnumber[optlistindex]
         conc = choice+" "+i
         print(conc)
-        if i == q.answer:
-            answer = choice
-            answersmall = choicesmall
-            answernumber = choicenumber
+        if i in q.answer:
+            answer.append(choice)
+            answersmall.append(choicesmall)
+            answernumber.append(choicenumber)
             questionTimeLimitList.extend(opto[optlistindex])
+            allAnswerStack.append(choice)
+            allAnswerStack.append(choicesmall)
+            allAnswerStack.append(choicenumber)
         optlistindex+=1
     print("\n")
     #!!!
@@ -717,7 +713,7 @@ def askingAWS(q):
     timedifference = endtime - startime
     randomtextaws = ""
     passed = -1
-    if myans == answer or myans == answersmall or myans == answernumber:
+    if correctionCheck(list(myans),allAnswerStack,q.answer) == True:
         print("\nYou are correct :)\n")
 
         if timedifference < myQuestionLimit:
@@ -731,16 +727,31 @@ def askingAWS(q):
             time.sleep(random.uniform(1,3))
     else:
         print("\nYou are Wrong :(\n")
-        explaSplit = q.explanation.split(".")
-        for e in explaSplit:
-            print(e)
-        print("\n")
+        theExplainer(q.explanation)
         explaWait = []
         explaWait.extend(q.explanation)
         explaWaitTime = len(explaWait) * 0.05
         time.sleep(explaWaitTime)
 
     return passed
+
+def correctionCheck(theInputs,theRealAnswers,finalAnswer):
+    print(theInputs)
+    print(theRealAnswers)
+    inputLength = len(list(theInputs))
+    answerLength = len(list(finalAnswer))
+    answerTally = 0
+    if inputLength==answerLength:
+        for myInputs in list(theInputs):
+            if myInputs in theRealAnswers:
+                answerTally+=1
+        if answerTally == answerLength:
+            return True
+        else:
+            return False
+    else:
+        return False
+
 def askingAWSP2(p):
     print(p)
     myans = raw_input("")
@@ -780,6 +791,7 @@ def creatingTheDirectory(thelist):
     # Computer Science/Cloud_AWS/Solutions Architect
     if len(thelist) != 3:
         print("List does not add up")
+        print(thelist)
         exit()
     folderHierarchy = []
     for i in thelist:
@@ -791,27 +803,13 @@ def creatingTheDirectory(thelist):
         except:
             return
 
-
-def savingToDirectory():
-    # This allows to read and write to the file directory
-    try:
-        file1 = open("Computer/AWS/Solutions Architect/ccc.txt","r")
-        fff = file1.read()
-        print(fff)
-        file1.close()
-        print("It worked")
-    except:
-        print("It did not work")
-    print("Done")
-
-
 def findingThePath():
     # This go through directories to find right
     # data to retrieve from which should be 
     # a text file or .txt file
     autoFinder = False  
     arr = []
-    for dirs in os.listdir():
+    for dirs in os.listdir("."):
         if ".txt" in dirs:
             arr.append(dirs)
         if "!" in dirs:
@@ -825,9 +823,14 @@ def findingThePath():
             finalDirectory.append(arr[0])
             directorySlicer+=1
             arr = os.listdir("/".join(finalDirectory))
-            if ".txt" in arr[0]:
-                finalDirectory.append(arr[0])
-                return finalDirectory
+            if len(arr)>0:
+                if ".txt" in arr[0]:
+                    finalDirectory.append(arr[0])
+                    return finalDirectory
+            else:
+                arr = os.listdir('.')
+                finalDirectory = []
+                directorySlicer = 0
         else:
             goToDirectory = directoryWalking(arr)
             autoFinder=False
@@ -860,47 +863,6 @@ def findingThePath():
                 tempDirList.append(dirs)
         arr = tempDirList
 
-
-def findingThePathhh():
-    # This go through directories to find right
-    # data to retrieve from which should be 
-    # a text file or .txt file
-    arr = os.listdir('!')
-    return arr
-
-def findingThePathh():
-    # This go through directories to find right
-    # data to retrieve from which should be 
-    # a text file or .txt file
-    try:
-        arr = os.listdir('!')
-    except:
-        arr = os.listdir('.')
-    finalDirectory = []
-    directorySlicer = 0
-    getStarted = True
-    while getStarted:
-        goToDirectory = directoryWalking(arr)
-        if "Go Back" in goToDirectory:
-            try:
-                directorySlicer-=1
-                finalDirectory = finalDirectory[:directorySlicer]
-                if directorySlicer == 0:
-                    arr = os.listdir('.')
-                else:
-                    finalDirectory = finalDirectory[:directorySlicer]
-                    arr = os.listdir("/".join(finalDirectory))
-            except:
-                exit()
-
-        else:
-            if ".txt" in goToDirectory:
-                finalDirectory.append(goToDirectory)
-                return finalDirectory
-            else:
-                finalDirectory.append(goToDirectory)
-                arr = os.listdir("/".join(finalDirectory))
-                directorySlicer+=1
 
 def directoryWalking(dir):
     # Going through the directories to
@@ -958,10 +920,11 @@ def theExplainer(theexp):
             for comm in commasplit:
                 ccc = "\t\t" + comm
                 print(ccc)
+                print("")
             print("")
         else:
             print(dots)
-            print("")
+            print("\n")
 
 def specialFowardTranslator(thetext):
     theTextt = thetext.replace(".","DOTT")
@@ -993,12 +956,17 @@ def specialBackwardTranslator(thetext):
     theTextt = theTextt.replace("THERAISEDSIGNSIGN","^")
     return theTextt
 
-    
+def spliterCheck(fff):
+    print(fff)
+    quickQ = Question(["tags"],"question?",["Answer1","Answer2"],["option1","option2","Answer2"],"This is some Explanation,, Exp1,, exp2,, hahah,, ok. MOre things",0,0,0,0)
+    askingAWS(quickQ)
+
 if __name__ == '__main__':
     #creatingTheDirectory(["Cloud Computing!","Micr!","Solutions!"])
     #savingToDirectory()
     #print(findingThePath())
     readingTheFile()
+    #spliterCheck("NOneeeed")
     #sliceTesting()
     #theExplainer("This is a testing thing. Explain,, Something is woring here. And it needs to split. Split this,, here it is then")
     #theExplainer("This is a testing thing. Explain, Something is woring here. And it needs to split. Split this,, here it is then")
