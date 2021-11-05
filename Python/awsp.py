@@ -16,17 +16,41 @@ Completed Items Here >>>>>
 >>>>> Also single options is not supported
 
 >>>>> Currently there is no support for multi answer questions
+
+>>>>>  Remove the save tag
+
+>>>>>  Questions must be in order or random = change the self.randomQuestionOrder in TheFile 
 """
 
-# Remove the save tag
-# Ability to reset the entire data
-# Add a step question
+# Ability to reset the entire data  totalReset
+
 # combination of tags from menu
-# Split the allthrough up so that it can parse, regular and save with all of them being split functions with numbered if system detection
-# Questions must be in order or random
-# No support for just explanations
+
+# Settings Menu
+#       >>>>> Question Toggler
+#              >>>>> Question
+#              >>>>> Pre Questions
+#              >>>>> Step Questions
+#              >>>>>  Explanations
+#       >>>>> THE TALLY AMOUNT (Done)
+#       >>>>> Question Order Random or in-Order (Done)
+#       >>>>> Speed of questions or wait time (Done)
+#              >>>>> Default or normal (Done)
+#              >>>>> Medium Fast (Done)
+#              >>>>> Instant (Done)
+#       >>>>> Show the Settings up top and an option to change it
+#       >>>>> The prefered number of questions to be asked (Done)
+
 # Try and append if the save file path already exists
-# The settings for that questions should be saved
+
+# Create Type Questions
+#       >>>>> Explanation Only
+#       >>>>> Add a step question
+# Question Parsing
+#   >>> Need a type definition for file
+#       >>>>> For actual Quesion parsing with abcd
+#       >>>>> For Fully Processed Quesions with tally total correct and wrong
+#       >>>>> For Semi Processed Questions without tally total correct and wrong
 
 class Question:
     def __init__(self,ts,qs,a,o,e,t,c,w,tl):
@@ -74,10 +98,17 @@ class Question:
         # Tag = %
         self.tally = tl
 
+        # This stores a string that is used for the settings of the questions
+        # Tag = SETTINGSLIGHTSET
+        self.settings = ""
+
+    def settingsSet(self,theSet):
+        self.settings = ",".join(theSet)
+
     def tallyUp(self):
         self.tally+=1
-        if self.tally >= 3:
-            self.tally = 3
+        #if self.tally >= 3:
+            #self.tally = 3
 
     def tallyDown(self):
         self.tally-=1
@@ -86,6 +117,12 @@ class Question:
 
     def asked(self):
         self.total+=1
+
+    def totalReset(self):
+        self.tally=0
+        self.wrong=0
+        self.correct=0
+        self.total=0
 
     def correcto(self):
         self.correct+=1
@@ -157,6 +194,12 @@ class Question:
         strng.append(str(self.tally))
         save.append(tagger.join(strng))
 
+        if self.settings != "":
+            tagger = "SETTINGSLIGHTSET"
+            strng = [""]
+            strng.append(str(self.settings))
+            save.append(tagger.join(strng))
+
         tagger = "_"
         saved = tagger.join(save)
         return saved
@@ -218,15 +261,52 @@ class TheFile:
 
         self.qq =[]
 
+
+        # Initializes the system for use
+        self.systemBoot = 0
+
+        # Menu Component:
+
+        # The tally limiter
+        self.tallyLimiter = 3
+
+        # The Explanation Toggle
+        self.explanationToggle = True
+
+        # The Question Toggle
+        self.questionToggle = True
+
+        # The Pre-Question Toggle
+        self.preQuestionToggle = True
+
+        # The Step-Question Toggle
+        self.stepQuestionToggle = True
+
+        # The Step-Question Toggle
+        self.stepQuestionToggle = True
+
+        # Whether Questions will be in order or not
+        self.randomQuestionOrder = False
+
+        # Determines the speed of System
+        # 0 = Instant
+        # 1 = Fast
+        # 2 = Slow
+        self.lightningSpeed = 2
+
+        # Specify the number of question
+        # 0 = Asked after every selection
+        # > 0 = Use the specified amount instead
+        self.specifiedNumberChoiceOfQuestions = 0
+
         # Goes through the file and retrieves the questions
         self.allthrough(self.obj)
 
+    
         # Goes through the Questions created from the above function
         # To bring out the tags
         self.tagCleanUp(self.taglist)
 
-        # Initializes the system for use
-        self.systemBoot = 1
 
     def checktesting(self):
         print(self.qq)
@@ -246,6 +326,7 @@ class TheFile:
 
     def tagCleanUp(self,tag):
         inThetag = []
+        tallyLimiterFloat = self.tallyLimiter * 1.00000
         tagToClean = tag
         for i in tagToClean:
             inThetag = self.tags[i]
@@ -262,7 +343,7 @@ class TheFile:
                 theQ = int(j)
                 theQQ = self.qs[int(j)]
                 self.tagTally[i]+=theQQ.tally
-                if theQQ.tally <3:
+                if theQQ.tally < self.tallyLimiter:
                     self.tagBadBucket[i].append(theQ)
                 else:
                     self.tagGoodBucket[i].append(theQ)
@@ -270,7 +351,7 @@ class TheFile:
                 self.tagNumberOfQuestionsWrong[i] += theQQ.wrong
             if self.systemBoot == 0:
                 self.tagBucket[i] = self.tagBadBucket[i]
-            self.tagCompletion[i] = (self.tagTally[i] + 0.00000) / (self.tagNumberOfQuestions[i] * 3.00000)
+            self.tagCompletion[i] = (self.tagTally[i] + 0.00000) / (self.tagNumberOfQuestions[i] * tallyLimiterFloat)
 
     def theWelcome(self,type):
         if type == 0:
@@ -283,6 +364,7 @@ class TheFile:
         comstr = ""
         comlst = []
         pickingChoices = []
+        self.menuIndicator()
         while i < tagLimit:
             tagnamer = self.taglist[i]
             theMenu = str(i)
@@ -299,15 +381,15 @@ class TheFile:
                 comstr = "".join(comlst[0:4])
             theMenu+= comstr
             theMenu+= "%"
-            printii(theMenu)
+            printi(theMenu,self.lightningSpeed)
             print("")
             i+=1
 
         print("")
         if type == 0:
-            printii("What topic would you like to work on today?")
+            printi("What topic would you like to work on today?",self.lightningSpeed)
         else:
-            printii("What topic would you like to work now?")
+            printi("What topic would you like to work now?",self.lightningSpeed)
 
         myans = ""
         print("")
@@ -321,19 +403,25 @@ class TheFile:
             theTag = self.taglist[choiceMade]
             self.hotSeat(theTag,self.doneBucket)
         else:
-            return 0
+            if myans == "*":
+                self.settingMenu()
+            else:
+                return 0
 
     def hotSeat(self,tag,bucket):
         print("\n")
         amountOfQuestions = "How many questions would you like for " +  tag + "?"
         myans = ""
-        if sys.version_info[0] < 3:
-            myans = askingAWSP2(amountOfQuestions)
+        if self.specifiedNumberChoiceOfQuestions == 0:
+            if sys.version_info[0] < 3:
+                myans = askingAWSP2(amountOfQuestions)
+            else:
+                myans = askingAWSP3(amountOfQuestions)
         else:
-            myans = askingAWSP3(amountOfQuestions)
+            myans = str(self.specifiedNumberChoiceOfQuestions)
         qLimit = int(myans)-1
-        print("\n"+tag+" It is then\n")
-        printi("Okay here we go\n\n")
+        print("\n"+tag+" It is then\n",self.lightningSpeed)
+        printi("Okay here we go\n\n",self.lightningSpeed)
         bagWeight = len(self.tagBucket[tag])
         myDoneBucket = bucket
         i = 0
@@ -342,10 +430,13 @@ class TheFile:
             if i > len(self.tagBucket[tag]) or i < 0:
                 return 0
             theHeatTemparature = 0
-            theHeatTemparature = self.tagBucket[tag][random.randint(0, bagWeight-1)]
+            if self.randomQuestionOrder == True:
+                theHeatTemparature = self.tagBucket[tag][random.randint(0, bagWeight-1)]
+            else:
+                theHeatTemparature = self.tagBucket[tag][i]
             if theHeatTemparature not in myDoneBucket:
                 theHeat = self.qs[theHeatTemparature]
-                theFire = askingAWS(theHeat)
+                theFire = askingAWS(theHeat,self.lightningSpeed,self.explanationToggle)
                 self.doneBucket.append(theHeatTemparature)
                 verd = self.theVerdict(theHeat,theFire,tag)
                 self.tagCleanUp([tag])
@@ -357,13 +448,13 @@ class TheFile:
                 if myans == "2":
                     i = bagWeight
             else:
-                printi("Loading Next Question, Please Wait \n\n")
+                printi("Loading Next Question, Please Wait \n\n",self.lightningSpeed)
             self.saveTheSystem()
             i+=1
 
 
         if i == bagWeight:
-            printi("It looks like you have answered all the questions on this topic")
+            printi("It looks like you have answered all the questions on this topic",self.lightningSpeed)
             print("")
             myans = self.makeADecision([],["Review all the questions on this topic again", "Retry questions which were wrong", "Go to the Main Menu"])
             if myans == "1":
@@ -380,9 +471,9 @@ class TheFile:
 
     def makeADecision(self,prompt,givenOptions):
         if len(prompt) == 0:
-            printii("What would you like to do now?")
+            printi("What would you like to do now?",self.lightningSpeed)
         else:
-            printii(prompt[0])
+            printi(prompt[0],self.lightningSpeed)
         print("")
         optionNumber = ["1","2","3","4","5","6"]
         options = givenOptions
@@ -424,7 +515,6 @@ class TheFile:
             if myans == "2":
                 self.theWelcome(1)
 
-
     def theVerdict(self,judge,jury,case):
         verdict = 0
         if jury > 0:
@@ -436,7 +526,375 @@ class TheFile:
             self.tagTally[case]-=1
         return verdict
 
+    # Parsing Zone
+
+    def rawParser(self,lines):
+        print("In Raw")
+        question = ""
+        tags = []
+        answer = []
+        option = []
+        explanation = ""
+        splittingAgain = lines
+        tag = []
+        allQuestions=[]
+        explanations = []
+        oneQuestion = []
+        asking = 0
+        pingPong = True
+        for i in splittingAgain:
+            if "!" in i:
+                tag.append(i)
+                pingPong = True
+            else:
+                if asking == 0:
+                    if "QUE" in i:
+                        allQuestions.append("_".join(oneQuestion))
+                        oneQuestion = []
+                        if pingPong == True:
+                            pingPong = False
+                        else:
+                            tag.append("PINGGED")
+                    oneQuestion.append(i)
+                else:
+                    if i is not "":
+                        explanations.append(i)
+                if "@" in i:
+                        asking = 1
+            
+        #print(explanations)
+        # This removes the null "" at the beginning of the
+        # allQuestions list
+        allQuestions = allQuestions[1:]
+        theCurrentTag = ""
+        thePreviousTag = ""
+        indexer = 0
+        dotSplit = []
+        explanationIndex = ""
+        theAnswers = []
+        cheatIndex = 0
+        # This stores the purified answers before asigning
+        # it to theAnswers list
+        refinedAnswers = []
+        currentExplanation = ""
+        questionBuild = []
+        parsedQuestions = []
+        theOPS = []
+        findingAnswers = []
+        #print(tag)
+        #print(explanations)
+        #return
+        for exp in explanations:
+            dotSplit = []
+            questionBuild = []
+            if tag[indexer] == "PINGGED":
+                theCurrentTag = thePreviousTag
+            else:
+                theCurrentTag = tag[indexer]
+                thePreviousTag = theCurrentTag
+            
+            dotSplit = exp.split("DOTT")
+            explanationIndex = dotSplit[0] + "DOTT"
+            explanationIndex = explanationIndex.replace(" ","")
+            theAnswers = dotSplit[1].split(",")
+            refinedAnswers = []
+            for ans in theAnswers:
+                refinedAnswers.append(ans.replace(" ","") + "DOTT")
+            theAnswers = []
+            theAnswers = refinedAnswers
+            currentExplanation = "".join(dotSplit[2:]).replace("DOTT",".")
+            cheatIndex = 0
+            spq =[]
+            while cheatIndex < len(allQuestions):
+                if explanationIndex in allQuestions[cheatIndex]:
+                    spq = allQuestions[cheatIndex].split("_")
+                    cheatIndex = len(allQuestions) + 100
+                cheatIndex+=1
+            if len(spq) == 0:
+                raise ValueError
+            
+            questionBuild.append(theCurrentTag)
+            tags = theCurrentTag
+            findingAnswers = []
+            answerfound = 0
+            theOPS = []
+            for q in spq:
+                answerfound = 0
+                if "QUE" in q:
+                    qqq = q.replace("QUE","?")
+                    questionBuild.append(qqq.replace(explanationIndex,""))
+                    question = qqq.replace(explanationIndex,"")
+                else:
+                    for ans in theAnswers:
+                        if ans in q:
+                            answerfound = 1
+                            findingAnswers.append(q.replace(ans,""))
+                    if answerfound == 0:
+                        quicksplit = q.split("DOTT")[1:]
+                        theOPS.append("".join(quicksplit))
+            
+            answer.append(findingAnswers)
+            option.append(theOPS)
+            explanation = currentExplanation
+            questionBuild.append("@"+currentExplanation)
+            print(tags)
+            print(question)
+            print(answer)
+            print(option)
+            print(explanation)
+            print("\n\n")
+            self.qs.append(Question(tags,question,answer,option,explanation,0,0,0,0))
+            self.qq.append(question)
+            for tts in tags:
+                if tts in self.tags:
+                    tagUpdate = self.tags[tts]
+                    tagUpdate.append(indexer)
+                    self.tags[tts] = tagUpdate
+                else:
+                    self.tags[tts] = [indexer]
+                    self.taglist.append(tts)
+            question = ""
+            tags = []
+            answer = []
+            option = []
+            explanation = ""
+
+            indexer+=1
+        return parsedQuestions
+
+    def semiParser(self,lines):
+        print("in semi")
+        ilimi = 0
+        spl = []
+        question = ""
+        tags = []
+        answer = []
+        option = []
+        explanation = ""
+        bad = 0
+        myindex = 0
+        nsplit = []
+        nonComponentCount = 0
+        directoryStore = False
+        linecountLoop = 0
+        for i in lines:
+            nonComponentCount = 0
+            linecountLoop+=1
+            if i == "":
+                    bad = 1
+            else:
+                bad = 0
+
+            if bad != 1:
+                spl = i.split("_")
+                ilimi = len(spl) - 1
+                if ilimi < 1:
+                    bad = 1
+                #print(spl)
+            for splitComponents in spl:
+                # Check if par is a question
+                if splitComponents.find("!") != -1 and bad != 1:
+                    tags = splitComponents.split("!")
+                    if directoryStore == False:
+                            self.theSaveDirectoryPath = tags[:3]
+                            creatingTheDirectory(self.theSaveDirectoryPath)
+                            saveExtention = str(tags[3]) + ".txt"
+                            self.theSaveDirectoryPath.append(saveExtention)
+                            directoryStore = True
+                    nonComponentCount+=1
+                    tags = splitComponents.split("!")[3:]
+                # Check if par is a question
+                if splitComponents.find("?") != -1 and bad != 1:
+                    question = splitComponents
+                    nonComponentCount+=1
+                # Check if par is an answer
+                if splitComponents.find("$") != -1 and bad != 1:
+                    nsplit = splitComponents.split("$")
+                    ans = self.cleanUpList(nsplit)
+                    answer = ans
+                    nonComponentCount+=1
+                # Check if par is an option
+                if splitComponents.find(">") != -1 and bad != 1:
+                    option = self.cleanUpList(splitComponents.split(">"))
+                    nonComponentCount+=1
+                # Check if par is an option
+                if splitComponents.find("@") != -1 and bad != 1:
+                    nsplit = splitComponents.split("@")
+                    ans = nsplit[len(nsplit)-1]
+                    explanation = ans.replace("#","ITEMFINDEROPENER")
+                    nonComponentCount+=1
+
+            # Check if par is an option
+            if nonComponentCount == 5 and bad != 1:
+                self.qs.append(Question(tags,question,answer,option,explanation,0,0,0,0))
+                #print(tags)
+                #print(question)
+                #print(answer)
+                #print(option)
+                #print(explanation)
+                self.qq.append(question)
+                for tts in tags:
+                    if tts in self.tags:
+                        tagUpdate = self.tags[tts]
+                        tagUpdate.append(myindex)
+                        self.tags[tts] = tagUpdate
+                    else:
+                        self.tags[tts] = [myindex]
+                        self.taglist.append(tts)
+                question = ""
+                tags = []
+                answer = []
+                option = []
+                explanation = ""
+                myindex +=1
+                nonComponentCount = 0
+            else:
+                # Shows of the bad ones
+                if bad != 1:
+                    print(i)
+                    print("\n\n")
+        #print(linecountLoop)
+        print(myindex)
+
+    def fullParser(self,lines):
+        print("in Full")
+        spl = []
+        question = ""
+        tags = []
+        answer = []
+        option = []
+        explanation = ""
+        bad = 0
+        myindex = 0
+        total = 0
+        correct = 0
+        wrong = 0
+        tally = 0
+        nsplit = []
+        directoryStore = False
+        for i in lines:
+            #Splits the text by underscore to get tags and questions
+            if i.find("%") != -1 and i.find("#") != -1:
+                if i == "" or i.find("$_") > 0:
+                    bad = 1
+                else:
+                    bad = 0
+
+                if bad != 1:
+                    spl = i.split("_")
+
+                    for j in spl:
+                        if j.find("!") != -1:
+                            nsplit = j.split("!")
+                            tags = self.cleanUpList(nsplit)
+                            if directoryStore == False:
+                                self.theSaveDirectoryPath = tags[:3]
+                                creatingTheDirectory(self.theSaveDirectoryPath)
+                                saveExtention = str(tags[4]) + ".txt"
+                                self.theSaveDirectoryPath.append(saveExtention)
+                                directoryStore = True
+                            tags = self.cleanUpList(nsplit)[3:]
+                        if j.find("?") != -1:
+                            nsplit = j.split("?")
+                            op = self.cleanUpList(nsplit)
+                            question = str(op[0]) + "?"
+
+                        if j.find("$") != -1:
+                            nsplit = j.split("$")
+                            ans = self.cleanUpList(nsplit)
+                            answer = ans
+
+                        if j.find(">") != -1:
+                            nsplit = j.split(">")
+                            ans = nsplit
+                            op = ans
+                            option.extend(self.cleanUpList(op))
+
+                        if j.find("@") != -1:
+                            nsplit = j.split("@")
+                            ans = self.cleanUpList(nsplit)
+                            explanation = str(ans[0])
+
+
+                        if j.find("#") != -1:
+                            nsplit = j.split("#")
+                            ans = self.cleanUpList(nsplit)
+                            total = int(ans[0])
+
+                        if j.find("+") != -1:
+                            nsplit = j.split("+")
+                            ans = self.cleanUpList(nsplit)
+                            correct = int(ans[0])
+
+                        if j.find("-") != -1:
+                            nsplit = j.split("-")
+                            ans = self.cleanUpList(nsplit)
+                            wrong = int(ans[0])
+
+                        if j.find("%") != -1:
+                            nsplit = j.split("%")
+                            ans = self.cleanUpList(nsplit)
+                            tally = int(ans[0])
+
+                    self.qs.append(Question(tags,question,answer,option,explanation,total,correct,wrong,tally))
+                    self.qq.append(question)
+                    for tts in tags:
+                        if tts in self.tags:
+                            tagUpdate = self.tags[tts]
+                            tagUpdate.append(myindex)
+                            self.tags[tts] = tagUpdate
+                        else:
+                            self.tags[tts] = [myindex]
+                            self.taglist.append(tts)
+                    question = ""
+                    tags = []
+                    answer = []
+                    option = []
+                    explanation = ""
+                    total = 0
+                    correct = 0
+                    wrong = 0
+                    tally = 0
+                    myindex +=1
+
     def allthrough(self,lines):
+        # Controls loop for finding parse Type
+        typeLoopControl = True
+
+        # Uses counter to determine type while looping
+        # looping through typeDeterminantList
+        typeCounter = 0
+
+        # Index used to go through the lines of file
+        lineIndex = 0
+        # Key characters used to determine type of parse
+        typeDeterminantList = ['_','!','?','+','%']
+
+        # Use while loop to break when type is found
+        while typeLoopControl == True:
+            
+            # If the line is not empty
+            if len(list(lines[lineIndex]))>0:
+                typeLoopControl = False
+                # Loop through line of the file to find and 
+                # count number of key characters found to determine type
+                for tdl in typeDeterminantList:
+                    if tdl in lines[lineIndex]:
+                        typeCounter+=1
+                
+                # Chooses the type of parse based on amount of 
+                # Key characters found
+                if typeCounter <2:
+                    self.rawParser(lines)
+                else:
+                    if typeCounter > 3:
+                        self.fullParser(lines)
+                    else:
+                        self.semiParser(lines)
+                typeCounter = 0
+            lineIndex+=1        
+
+    def oldAllthrough(self,lines):
         ilimi = 0
         spl = []
         question = ""
@@ -475,7 +933,7 @@ class TheFile:
                                 saveExtention = str(tags[4]) + ".txt"
                                 self.theSaveDirectoryPath.append(saveExtention)
                                 directoryStore = True
-
+                            tags = self.cleanUpList(nsplit)[3:]
                         if j.find("?") != -1:
                             nsplit = j.split("?")
                             op = self.cleanUpList(nsplit)
@@ -562,6 +1020,7 @@ class TheFile:
                                 self.theSaveDirectoryPath.append(saveExtention)
                                 directoryStore = True
                         nonComponentCount+=1
+                        tags = splitComponents.split("!")[3:]
                     # Check if par is a question
                     if splitComponents.find("?") != -1 and bad != 1:
                         question = splitComponents
@@ -632,24 +1091,137 @@ class TheFile:
 
     def contentsCheck(self):
         for i in self.qs:
-            TAWS(i)
-def printi(pp):
+            i.contentCheck()
+
+    # Menu System
+
+    def menuIndicator(self):
+        settingsString = "To access the settings enter *\n"
+
+        if self.questionToggle == True:
+            settingsString+= "Q = T, "
+        else:
+            settingsString+= "Q = F, "
+        if self.preQuestionToggle == True:
+            settingsString+= "PQ = T, "
+        else:
+            settingsString+= "PQ = F, "
+        if self.stepQuestionToggle == True:
+            settingsString+= "SQ = T, "
+        else:
+            settingsString+= "SQ = F, "
+        if self.explanationToggle == True:
+            settingsString+= "EX = T, "
+        else:
+            settingsString+= "EX = F, "
+        if self.randomQuestionOrder == True:
+            settingsString+= "Order = T, "
+        else:
+            settingsString+= "Order = F, "
+
+        settingsString+= "Limiter = "+str(self.tallyLimiter)+", "
+
+        settingsString+= "Speed = "+str(self.lightningSpeed)+", "
+
+        if self.specifiedNumberChoiceOfQuestions == 0:
+            settingsString+= "# of Q = Custom"
+        else:
+            settingsString+= "# of Q = "+str(self.lightningSpeed)
+
+        printi(settingsString,self.lightningSpeed)
+    def settingMenu(self):
+        settingsString = "Welcome to the Settings\n\n"
+        settingsString+= "Choose a corresponding settings variable, then change the settings with the = sign\n"
+        settingsString+= "Separate chosen topic to be changed by a comma or ,"
+        settingsString+= "For Example\n 1 = T, 7 = 3\n\n"
+        settingsString+= "Here are the settings and explanations\n"
+
+        printi(settingsString,self.lightningSpeed)
+
+        # Keeps all the boolean settings
+        theBooleanSettingsList = []
+
+        description = "Determines whether simple question types will be asked"
+        printi(description,self.lightningSpeed)
+        theBooleanSettingsList.append(self.questionToggle)
+        if self.questionToggle == True:
+            settingsString= "Q = T, "
+        else:
+            settingsString= "Q = F, "
+            printi(settingsString,self.lightningSpeed)
+        
+        description = "Determines whether pre type questions will be asked"
+        printi(description,self.lightningSpeed)
+        theBooleanSettingsList.append(self.preQuestionToggle)
+        if self.preQuestionToggle == True:
+            settingsString= "PQ = T, "
+        else:
+            settingsString= "PQ = F, "
+        printi(settingsString,self.lightningSpeed)
+
+        description = "Determines whether Step type questions will be asked"
+        printi(description,self.lightningSpeed)
+        theBooleanSettingsList.append(self.stepQuestionToggle)
+        if self.stepQuestionToggle == True:
+            settingsString= "SQ = T, "
+        else:
+            settingsString= "SQ = F, "
+        printi(settingsString,self.lightningSpeed)
+        
+        description = "Determines whether there will be explanations after questions"
+        printi(description,self.lightningSpeed)
+        theBooleanSettingsList.append(self.explanationToggle)
+        if self.explanationToggle == True:
+            settingsString= "EX = T, "
+        else:
+            settingsString= "EX = F, "
+        printi(settingsString,self.lightningSpeed)
+
+        description = "Determines whether if the questions are in Order or not"
+        printi(description,self.lightningSpeed)
+        theBooleanSettingsList.append(self.randomQuestionOrder)
+        if self.randomQuestionOrder == True:
+            settingsString+= "Order = T, "
+        else:
+            settingsString+= "Order = F, "
+        printi(settingsString,self.lightningSpeed)
+
+        theIntegerSettings =[]
+        description = "Determines whether if the questions are in Order or not"
+        printi(description,self.lightningSpeed)
+        theIntegerSettings.append(self.tallyLimiter)
+        settingsString= "Limiter = "+str(self.tallyLimiter)+", "
+        printi(settingsString,self.lightningSpeed)
+
+
+        description = "Determines whether if the questions are in Order or not"
+        printi(description,self.lightningSpeed)
+        theIntegerSettings.append(self.lightningSpeed)
+        settingsString= "Speed = "+str(self.lightningSpeed)+", "
+        
+        if self.specifiedNumberChoiceOfQuestions == 0:
+            settingsString+= "# of Q = Custom"
+        else:
+            settingsString+= "# of Q = "+str(self.lightningSpeed)
+
+        printi(settingsString,self.lightningSpeed)
+def printi(pp,customPrintSpe):
+    customPrintSpeed = customPrintSpe * 0
+    newLineLowSpeed = 0.5 * customPrintSpeed
+    newLineHighSpeed = 0.8 * customPrintSpeed
+    lineSpeed = 0.05 * customPrintSpeed
     for i in pp:
         sys.stdout.write(i)
         sys.stdout.flush()
-        if i == '\n':
-            time.sleep(random.uniform(1,1.5))
-        else:
-            time.sleep(random.uniform(0,0.1))
-def printii(pp):
-    for i in pp:
-        sys.stdout.write(i)
-        sys.stdout.flush()
-        if i == '\n':
-            time.sleep(random.uniform(0.5,0.7))
-        else:
-            time.sleep(random.uniform(0,0.05))
-def askingAWS(q):
+        if customPrintSpeed > 0:
+            if i == '\n':
+                time.sleep(random.uniform(newLineLowSpeed,newLineHighSpeed))
+            else:
+                time.sleep(random.uniform(0,lineSpeed))
+def askingAWS(q,waitSpeed,toBeExplained):
+    lowerWait = 0.3 * (1 + waitSpeed)
+    higherWait = 1 * (1 + waitSpeed)
+    explanationReadSpeed = 0.025 *(1 + waitSpeed)
     answer = []
     answersmall = []
     myans = ""
@@ -659,7 +1231,7 @@ def askingAWS(q):
     #print(q.question)
     quesSplit = q.question.split(".")
     for ee in quesSplit:
-        print(ee)
+        print(specialBackwardTranslator(ee))
     print("\n")
     generatedOptions = []
     generatedOptions.extend(q.options)
@@ -683,7 +1255,7 @@ def askingAWS(q):
         choice = optList[optlistindex]
         choicesmall = optlist[optlistindex]
         choicenumber = optnumber[optlistindex]
-        conc = choice+" "+i
+        conc = choice+" "+ specialBackwardTranslator(i)
         print(conc)
         if i in q.answer:
             answer.append(choice)
@@ -724,14 +1296,15 @@ def askingAWS(q):
             randomtextaws = str(round(timedifference,3)) + " seconds out of the given " + str(round(myQuestionLimit,3)) + " seconds"
             print(randomtextaws)
             print("\n\n")
-            time.sleep(random.uniform(1,3))
+            time.sleep(random.uniform(lowerWait,higherWait))
     else:
-        print("\nYou are Wrong :(\n")
-        theExplainer(q.explanation)
-        explaWait = []
-        explaWait.extend(q.explanation)
-        explaWaitTime = len(explaWait) * 0.05
-        time.sleep(explaWaitTime)
+        if toBeExplained == True:
+            print("\nYou are Wrong :(\n")
+            theExplainer(q.explanation)
+            explaWait = []
+            explaWait.extend(q.explanation)
+            explaWaitTime = len(explaWait) * explanationReadSpeed
+            time.sleep(explaWaitTime)
 
     return passed
 
@@ -878,7 +1451,7 @@ def directoryWalking(dir):
         theMenu += " "
         theMenu+= walkingDirectoring[i]
         pickingChoices.append(theMenu)
-        printii(theMenu)
+        printi(theMenu,1)
         print("")
         i+=1
     myans = ""
@@ -894,7 +1467,7 @@ def directoryWalking(dir):
     exit() 
 
 
-def readingTheFile():
+def readingTheFil():
     foundDataFile = findingThePath()
     try:
         ff = open("/".join(foundDataFile), "r")
@@ -908,6 +1481,17 @@ def readingTheFile():
         spliterr += theQQ().split("\n")
         parser = TheFile(spliterr)
     #print(spliterr)
+    #parser.theWelcome(0)
+    #parser.contentsCheck()
+    return 0
+
+def readingTheFile():
+    foundDataFile = findingThePath()
+    ff = open("/".join(foundDataFile), "r")
+    theTextt = ff.read()
+    spliterr = theTextt.split("\n")
+    parser = TheFile(spliterr)
+    ff.close()
     parser.theWelcome(0)
     return 0
 
@@ -939,6 +1523,7 @@ def specialFowardTranslator(thetext):
     theTextt = theTextt.replace("_","UNDERSCORESCORING")
     theTextt = theTextt.replace("<","BACKWARDARROWTHING")
     theTextt = theTextt.replace("^","THERAISEDSIGNSIGN")
+    theTextt = theTextt.replace("/","FORWARDSLASHER")
     return theTextt
 
 def specialBackwardTranslator(thetext):
@@ -954,12 +1539,13 @@ def specialBackwardTranslator(thetext):
     theTextt = theTextt.replace("UNDERSCORESCORING","_")
     theTextt = theTextt.replace("BACKWARDARROWTHING","<")
     theTextt = theTextt.replace("THERAISEDSIGNSIGN","^")
+    theTextt = theTextt.replace("FORWARDSLASHER","/")
     return theTextt
 
 def spliterCheck(fff):
     print(fff)
     quickQ = Question(["tags"],"question?",["Answer1","Answer2"],["option1","option2","Answer2"],"This is some Explanation,, Exp1,, exp2,, hahah,, ok. MOre things",0,0,0,0)
-    askingAWS(quickQ)
+    askingAWS(quickQ,2)
 
 if __name__ == '__main__':
     #creatingTheDirectory(["Cloud Computing!","Micr!","Solutions!"])
