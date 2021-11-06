@@ -136,10 +136,11 @@ class Question:
         self.tallyDown()
         return self.tally
 
-    def saveString(self):
+    def saveString(self,savetags):
         save = []
         tagger = "!"
         strng = []
+        strng.extend(savetags[:3])
         strng.extend(self.tags)
         save.append(tagger.join(strng))
 
@@ -286,18 +287,29 @@ class TheFile:
         self.stepQuestionToggle = True
 
         # Whether Questions will be in order or not
-        self.randomQuestionOrder = False
+        self.randomQuestionOrder = True
 
         # Determines the speed of System
         # 0 = Instant
         # 1 = Fast
         # 2 = Slow
-        self.lightningSpeed = 2
+        self.lightningSpeed = 1
 
         # Specify the number of question
         # 0 = Asked after every selection
         # > 0 = Use the specified amount instead
         self.specifiedNumberChoiceOfQuestions = 0
+
+        # Menu Minimalism
+        # Menu character size limit
+        self.menuCharacterSizeLimit = 0
+
+        # Amount of Columns to Choose from:
+        self.menuColoumnLimit = 3
+
+        # Choose whether to load next Questions automatically or 
+        # press enter to move to the next question
+        self.autoExplanationTransition = False
 
         # Goes through the file and retrieves the questions
         self.allthrough(self.obj)
@@ -362,28 +374,38 @@ class TheFile:
         i = 0
         completo = 0.2
         comstr = ""
+        fakeSpaces = "                                        "
         comlst = []
         pickingChoices = []
         self.menuIndicator()
+        print("\n\n")
+        columnStacker = []
         while i < tagLimit:
             tagnamer = self.taglist[i]
-            theMenu = str(i)
-            pickingChoices.append(theMenu)
-            theMenu += " "
+            theMenu = "["+ str(i)+"]" 
+            pickingChoices.append(str(i))
+            theMenu+= fakeSpaces[:4 - len(str(i))]
             theMenu+= tagnamer
-            theMenu+= " "
+            theMenu+= fakeSpaces[:self.menuCharacterSizeLimit - len(tagnamer)]
             completo = self.tagCompletion[tagnamer] * 100.00000000
             comstr = str(completo)
             comlst = list(comstr)
             if len(comlst) < 4:
-                comstr = "".join(comlst)
+                comlst.extend(list("0000"))
+                comstr = "".join(comlst[:4])
             else:
                 comstr = "".join(comlst[0:4])
             theMenu+= comstr
             theMenu+= "%"
-            printi(theMenu,self.lightningSpeed)
-            print("")
             i+=1
+            columnStacker.append(theMenu)
+            if len(columnStacker) == self.menuColoumnLimit:
+                print("      ".join(columnStacker))
+                #printi("      ".join(columnStacker),self.lightningSpeed)
+                print("")
+                columnStacker = []            
+            #printi(theMenu,self.lightningSpeed)
+            #print("")
 
         print("")
         if type == 0:
@@ -426,17 +448,28 @@ class TheFile:
         myDoneBucket = bucket
         i = 0
         myans = ""
+        randomBuilder = []
+        while i < bagWeight:
+            randomBuilder.append(i)
+            i+=1
+        #print(randomBuilder)
+        randomBuild = random.shuffle(randomBuilder)
+        randomBuild = randomBuilder
+        i = 0
         while i < bagWeight:
             if i > len(self.tagBucket[tag]) or i < 0:
                 return 0
             theHeatTemparature = 0
             if self.randomQuestionOrder == True:
-                theHeatTemparature = self.tagBucket[tag][random.randint(0, bagWeight-1)]
+                #print(randomBuild)
+                #print(randomBuild[i])
+                #theHeatTemparature = self.tagBucket[tag][random.randint(0, bagWeight-1)]
+                theHeatTemparature = self.tagBucket[tag][randomBuild[i]]
             else:
                 theHeatTemparature = self.tagBucket[tag][i]
             if theHeatTemparature not in myDoneBucket:
                 theHeat = self.qs[theHeatTemparature]
-                theFire = askingAWS(theHeat,self.lightningSpeed,self.explanationToggle)
+                theFire = askingAWS(theHeat,self.lightningSpeed,self.explanationToggle,self.autoExplanationTransition)
                 self.doneBucket.append(theHeatTemparature)
                 verd = self.theVerdict(theHeat,theFire,tag)
                 self.tagCleanUp([tag])
@@ -653,6 +686,8 @@ class TheFile:
                 else:
                     self.tags[tts] = [indexer]
                     self.taglist.append(tts)
+                    if len(tts) >= self.menuCharacterSizeLimit:
+                        self.menuCharacterSizeLimit =len(tts)
             question = ""
             tags = []
             answer = []
@@ -741,6 +776,8 @@ class TheFile:
                     else:
                         self.tags[tts] = [myindex]
                         self.taglist.append(tts)
+                        if len(tts) >= self.menuCharacterSizeLimit:
+                            self.menuCharacterSizeLimit =len(tts)
                 question = ""
                 tags = []
                 answer = []
@@ -788,9 +825,10 @@ class TheFile:
                             nsplit = j.split("!")
                             tags = self.cleanUpList(nsplit)
                             if directoryStore == False:
+                            
                                 self.theSaveDirectoryPath = tags[:3]
                                 creatingTheDirectory(self.theSaveDirectoryPath)
-                                saveExtention = str(tags[4]) + ".txt"
+                                saveExtention = str(tags[3]) + ".txt"
                                 self.theSaveDirectoryPath.append(saveExtention)
                                 directoryStore = True
                             tags = self.cleanUpList(nsplit)[3:]
@@ -846,6 +884,8 @@ class TheFile:
                         else:
                             self.tags[tts] = [myindex]
                             self.taglist.append(tts)
+                            if len(tts) >= self.menuCharacterSizeLimit:
+                                self.menuCharacterSizeLimit =len(tts) + 2
                     question = ""
                     tags = []
                     answer = []
@@ -1075,7 +1115,7 @@ class TheFile:
     def saveTheSystem(self):
         ssd = []
         for i in self.qs:
-            ssd.append(i.saveString())
+            ssd.append(i.saveString(self.theSaveDirectoryPath))
         ss = "\n".join(ssd)
         file1 = open("!/".join(self.theSaveDirectoryPath),"w")
         file1.write(ss)
@@ -1206,7 +1246,7 @@ class TheFile:
 
         printi(settingsString,self.lightningSpeed)
 def printi(pp,customPrintSpe):
-    customPrintSpeed = customPrintSpe * 0
+    customPrintSpeed = customPrintSpe * 1
     newLineLowSpeed = 0.5 * customPrintSpeed
     newLineHighSpeed = 0.8 * customPrintSpeed
     lineSpeed = 0.05 * customPrintSpeed
@@ -1218,7 +1258,8 @@ def printi(pp,customPrintSpe):
                 time.sleep(random.uniform(newLineLowSpeed,newLineHighSpeed))
             else:
                 time.sleep(random.uniform(0,lineSpeed))
-def askingAWS(q,waitSpeed,toBeExplained):
+def askingAWS(q,waitSpeed,toBeExplained,autoskipper):
+    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     lowerWait = 0.3 * (1 + waitSpeed)
     higherWait = 1 * (1 + waitSpeed)
     explanationReadSpeed = 0.025 *(1 + waitSpeed)
@@ -1285,6 +1326,7 @@ def askingAWS(q,waitSpeed,toBeExplained):
     timedifference = endtime - startime
     randomtextaws = ""
     passed = -1
+
     if correctionCheck(list(myans),allAnswerStack,q.answer) == True:
         print("\nYou are correct :)\n")
 
@@ -1297,20 +1339,33 @@ def askingAWS(q,waitSpeed,toBeExplained):
             print(randomtextaws)
             print("\n\n")
             time.sleep(random.uniform(lowerWait,higherWait))
-    else:
-        if toBeExplained == True:
+    
+    if toBeExplained == True:
+        #theExplainer(q.explanation)
+        if passed == 1:
+            print("\nExplanation\n")
+        else:
             print("\nYou are Wrong :(\n")
-            theExplainer(q.explanation)
+        theExplainer(q.explanation)
+        if autoskipper == True:
             explaWait = []
             explaWait.extend(q.explanation)
             explaWaitTime = len(explaWait) * explanationReadSpeed
             time.sleep(explaWaitTime)
+        else:
+            #Ask the question
+            whatToAsk = "Press Enter to Continue "
+            if sys.version_info[0] < 3:
+                myans = askingAWSP2(whatToAsk)
+            else:
+                myans = askingAWSP3(whatToAsk)
+            
 
     return passed
 
 def correctionCheck(theInputs,theRealAnswers,finalAnswer):
-    print(theInputs)
-    print(theRealAnswers)
+    #print(theInputs)
+    #print(theRealAnswers)
     inputLength = len(list(theInputs))
     answerLength = len(list(finalAnswer))
     answerTally = 0
@@ -1496,7 +1551,7 @@ def readingTheFile():
     return 0
 
 def theExplainer(theexp):
-    dotsplit = theexp.split(".")
+    dotsplit = specialBackwardTranslator(theexp).split(".")
     for dots in dotsplit:
         if len(dots.split(",,")) >= 1:
             commasplit = dots.split(",,")[1:]
