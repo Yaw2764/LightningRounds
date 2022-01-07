@@ -19,7 +19,7 @@ Completed Items Here >>>>>
 
 >>>>>  Remove the save tag
 
->>>>>  Questions must be in order or random = change the self.randomQuestionOrder in TheFile 
+>>>>>  Questions must be in order or random = change the self.lightningRoundsSettings["RQR"] in TheFile 
 """
 
 # Ability to reset the entire data  totalReset
@@ -264,61 +264,16 @@ class TheFile:
         # Initializes the system for use
         self.systemBoot = 0
 
-        # Menu Component:
-
-        # The tally limiter
-        self.tallyLimiter = 3
-
-        # The Explanation Toggle
-        self.explanationToggle = True
-
-        # The Question Toggle
-        self.questionToggle = True
-
-        # The Pre-Question Toggle
-        self.preQuestionToggle = True
-
-        # The Step-Question Toggle
-        self.stepQuestionToggle = True
-
-        # The Step-Question Toggle
-        self.stepQuestionToggle = True
-
-        # Whether Questions will be in order or not
-        self.randomQuestionOrder = False
-
-        # Determines the speed of System
-        # 0 = Instant
-        # 1 = Fast
-        # 2 = Slow
-        self.lightningSpeed = 0
-
-        # Specify the number of question
-        # 0 = Asked after every selection
-        # > 0 = Use the specified amount instead
-        self.specifiedNumberChoiceOfQuestions = 20
-
-        # Exam Time Constraint which times how long
-        # the user has to answer a question
-        self.noTimeConstraint = True
-
         # Menu Minimalism
         # Menu character size limit
         self.menuCharacterSizeLimit = 0
 
-        # Amount of Columns to Choose from:
-        self.menuColoumnLimit = 3
-
-        # Choose whether to load next Questions automatically or 
-        # press enter to move to the next question
-        self.menuAutoExplanationTransition = False
-
-        # Choose whether to repeat quesions in a session
-        self.menuRepeatedQuestions = True
+        # Menu Component:
+        # The Menu Dictionary
+        self.lightningRoundsSettings = {}
 
         # Goes through the file and retrieves the questions
         self.allthrough(self.obj)
-
     
         # Goes through the Questions created from the above function
         # To bring out the tags
@@ -343,7 +298,7 @@ class TheFile:
 
     def tagCleanUp(self,tag):
         inThetag = []
-        tallyLimiterFloat = self.tallyLimiter * 1.00000
+        tallyLimiterFloat = self.lightningRoundsSettings["TL"] * 1.00000
         tagToClean = tag
         for i in tagToClean:
             inThetag = self.tags[i]
@@ -360,7 +315,7 @@ class TheFile:
                 theQ = int(j)
                 theQQ = self.qs[int(j)]
                 self.tagTally[i]+=theQQ.tally
-                if theQQ.tally < self.tallyLimiter:
+                if theQQ.tally < self.lightningRoundsSettings["TL"]:
                     self.tagBadBucket[i].append(theQ)
                 else:
                     self.tagGoodBucket[i].append(theQ)
@@ -404,7 +359,7 @@ class TheFile:
             theMenu+= "%"
             i+=1
             columnStacker.append(theMenu)
-            if len(columnStacker) == self.menuColoumnLimit:
+            if len(columnStacker) == self.lightningRoundsSettings["MCL"]:
                 print("      ".join(columnStacker))
                 #printi("      ".join(columnStacker),self.lightningSpeed)
                 print("")
@@ -414,9 +369,9 @@ class TheFile:
 
         print("")
         if type == 0:
-            printi("What topic would you like to work on today?",self.lightningSpeed)
+            printi("What topic would you like to work on today?",self.lightningRoundsSettings["LS"])
         else:
-            printi("What topic would you like to work now?",self.lightningSpeed)
+            printi("What topic would you like to work now?",self.lightningRoundsSettings["LS"])
 
         myans = ""
         print("")
@@ -437,21 +392,21 @@ class TheFile:
 
     def hotSeat(self,tag):
         self.systemBoot = 1
-        if self.menuRepeatedQuestions == True:
+        if self.lightningRoundsSettings["MRQ"] == 1:
             self.doneBucket = []
         print("\n")
         amountOfQuestions = "How many questions would you like for " +  tag + "?"
         myans = ""
-        if self.specifiedNumberChoiceOfQuestions <= 0:
+        if self.lightningRoundsSettings["SNCQ"] <= 0:
             if sys.version_info[0] < 3:
                 myans = askingAWSP2(amountOfQuestions)
             else:
                 myans = askingAWSP3(amountOfQuestions)
         else:
-            myans = str(self.specifiedNumberChoiceOfQuestions)
+            myans = str(self.lightningRoundsSettings["SNCQ"])
         qLimit = int(myans)-1
-        print("\n"+tag+" It is then\n",self.lightningSpeed)
-        printi("Okay here we go\n\n",self.lightningSpeed)
+        print("\n"+tag+" It is then\n",self.lightningRoundsSettings["LS"])
+        printi("Okay here we go\n\n",self.lightningRoundsSettings["LS"])
         bagWeight = len(self.tagBucket[tag])
         #print(bagWeight)
         myDoneBucket = self.doneBucket
@@ -464,7 +419,7 @@ class TheFile:
             i+=1
         #print(randomOrNotBuilder)
         bagWeight = len(randomOrNotBuilder)
-        if self.randomQuestionOrder == True:
+        if self.lightningRoundsSettings["RQR"] == 1:
             randomOrNotBuild = random.shuffle(randomOrNotBuilder)
         randomOrNotBuild = randomOrNotBuilder
         i = 0
@@ -506,7 +461,7 @@ class TheFile:
             theHeatTemparature = self.tagBucket[tag][randomOrNotBuild[i]]
             if theHeatTemparature not in myDoneBucket:
                 theHeat = self.qs[theHeatTemparature]
-                theFire = askingAWS(theHeat,self.lightningSpeed,self.explanationToggle,self.menuAutoExplanationTransition,self.noTimeConstraint,i,qLimit+1,tag)
+                theFire = askingAWS(theHeat,self.lightningRoundsSettings["LS"],self.lightningRoundsSettings["ET"],self.lightningRoundsSettings["MAET"],self.lightningRoundsSettings["NTC"],i,qLimit+1,tag)
                 self.doneBucket.append(theHeatTemparature)
                 verd = self.theVerdict(theHeat,theFire,tag)
                 self.tagCleanUp([tag])
@@ -523,7 +478,7 @@ class TheFile:
                 if myans == "2":
                     i = bagWeight
             else:
-                printi("Loading Next Question, Please Wait \n\n",self.lightningSpeed)
+                printi("Loading Next Question, Please Wait \n\n",self.lightningRoundsSettings["LS"])
             self.saveTheSystem()
             i+=1
 
@@ -531,7 +486,7 @@ class TheFile:
         self.tagCleanUp([tag])
 
         if i == bagWeight:
-            printi("It looks like you have answered all the questions on this topic",self.lightningSpeed)
+            printi("It looks like you have answered all the questions on this topic",self.lightningRoundsSettings["LS"])
             #print("")
             endtime = time.time()
             timedifference = (endtime - startime) / 60
@@ -553,9 +508,9 @@ class TheFile:
 
     def makeADecision(self,prompt,givenOptions):
         if len(prompt) == 0:
-            printi("What would you like to do now?",self.lightningSpeed)
+            printi("What would you like to do now?",self.lightningRoundsSettings["LS"])
         else:
-            printi(prompt[0],self.lightningSpeed)
+            printi(prompt[0],self.lightningRoundsSettings["LS"])
         print("")
         optionNumber = ["1","2","3","4","5","6"]
         options = givenOptions
@@ -1213,17 +1168,18 @@ class TheFile:
         else:
             settingsString+= "Order = F, "
 
-        settingsString+= "Limiter = "+str(self.tallyLimiter)+", "
+        settingsString+= "Limiter = "+str(self.lightningRoundsSettings["TL"])+", "
 
-        settingsString+= "Speed = "+str(self.lightningSpeed)+", "
+        settingsString+= "Speed = "+str(self.lightningRoundsSettings["LS"])+", "
 
-        if self.specifiedNumberChoiceOfQuestions == 0:
+        if self.lightningRoundsSettings["SNCQ"] == 0:
             settingsString+= "# of Q = Custom"
         else:
-            settingsString+= "# of Q = "+str(self.lightningSpeed)
+            settingsString+= "# of Q = "+str(self.lightningRoundsSettings["LS"])
 
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
         print("\n\n")
+
     def settingMenu(self):
         settingsString = "Welcome to the Settings\n\n"
         settingsString+= "Choose a corresponding settings variable, then change the settings with the = sign\n"
@@ -1231,75 +1187,134 @@ class TheFile:
         settingsString+= "For Example\n 1 = T, 7 = 3\n\n"
         settingsString+= "Here are the settings and explanations\n"
 
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
 
         # Keeps all the boolean settings
         theBooleanSettingsList = []
 
         description = "Determines whether simple question types will be asked"
-        printi(description,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
         theBooleanSettingsList.append(self.questionToggle)
         if self.questionToggle == True:
             settingsString= "Q = T, "
         else:
             settingsString= "Q = F, "
-            printi(settingsString,self.lightningSpeed)
+            printi(settingsString,self.lightningRoundsSettings["LS"])
         
         description = "Determines whether pre type questions will be asked"
-        printi(description,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
         theBooleanSettingsList.append(self.preQuestionToggle)
         if self.preQuestionToggle == True:
             settingsString= "PQ = T, "
         else:
             settingsString= "PQ = F, "
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
 
         description = "Determines whether Step type questions will be asked"
-        printi(description,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
         theBooleanSettingsList.append(self.stepQuestionToggle)
         if self.stepQuestionToggle == True:
             settingsString= "SQ = T, "
         else:
             settingsString= "SQ = F, "
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
         
         description = "Determines whether there will be explanations after questions"
-        printi(description,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
         theBooleanSettingsList.append(self.explanationToggle)
         if self.explanationToggle == True:
             settingsString= "EX = T, "
         else:
             settingsString= "EX = F, "
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
 
         description = "Determines whether if the questions are in Order or not"
-        printi(description,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
         theBooleanSettingsList.append(self.randomQuestionOrder)
         if self.randomQuestionOrder == True:
             settingsString+= "Order = T, "
         else:
             settingsString+= "Order = F, "
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
 
         theIntegerSettings =[]
         description = "Determines whether if the questions are in Order or not"
-        printi(description,self.lightningSpeed)
-        theIntegerSettings.append(self.tallyLimiter)
-        settingsString= "Limiter = "+str(self.tallyLimiter)+", "
-        printi(settingsString,self.lightningSpeed)
+        printi(description,self.lightningRoundsSettings["LS"])
+        theIntegerSettings.append(self.lightningRoundsSettings["TL"])
+        settingsString= "Limiter = "+str(self.lightningRoundsSettings["TL"])+", "
+        printi(settingsString,self.lightningRoundsSettings["LS"])
 
 
         description = "Determines whether if the questions are in Order or not"
-        printi(description,self.lightningSpeed)
-        theIntegerSettings.append(self.lightningSpeed)
-        settingsString= "Speed = "+str(self.lightningSpeed)+", "
+        printi(description,self.lightningRoundsSettings["LS"])
+        theIntegerSettings.append(self.lightningRoundsSettings["LS"])
+        settingsString= "Speed = "+str(self.lightningRoundsSettings["LS"])+", "
         
-        if self.specifiedNumberChoiceOfQuestions == 0:
+        if self.lightningRoundsSettings["SNCQ"] == 0:
             settingsString+= "# of Q = Custom"
         else:
-            settingsString+= "# of Q = "+str(self.lightningSpeed)
+            settingsString+= "# of Q = "+str(self.lightningRoundsSettings["LS"])
 
-        printi(settingsString,self.lightningSpeed)
+        printi(settingsString,self.lightningRoundsSettings["LS"])
+
+    def settingsDefault(self):
+        # The tally limiter
+        # TL = tallyLimiter
+        self.lightningRoundsSettings["TL"] = 3
+
+        # The Explanation Toggle
+        # ET = explanationToggle
+        self.lightningRoundsSettings["ET"] = 1
+
+        # The Question Toggle
+        # QT = questionToggle
+        self.lightningRoundsSettings["QT"] = 1
+
+        # The Pre-Question Toggle
+        # PQT = preQuestionToggle
+        self.lightningRoundsSettings["PQT"] = 1
+
+        # The Step-Question Toggle
+        # SQT = stepQuestionToggle
+        self.lightningRoundsSettings["SQT"] = 1
+
+        # Whether Questions will be in order or not
+        # RQR = randomQuestionOrder
+        self.lightningRoundsSettings["RQR"] = 0
+
+        # Determines the speed of System
+        # 0 = Instant
+        # 1 = Fast
+        # 2 = Slow
+        # LS = lightningSpeed
+        self.lightningRoundsSettings["LS"] = 0
+
+        # Specify the number of question
+        # 0 = Asked after every selection
+        # > 0 = Use the specified amount instead
+        # SNCQ = specifiedNumberChoiceOfQuestions
+        self.lightningRoundsSettings["SNCQ"] = 20
+
+        # Exam Time Constraint which times how long
+        # the user has to answer a question
+        # NTC = noTimeConstraint
+        self.lightningRoundsSettings["NTC"] = 1
+
+        # Amount of Columns to Choose from:
+        # MCL = menuColoumnLimit
+        self.lightningRoundsSettings["MCL"] = 3
+        #self.lightningRoundsSettings["MCL"] = 3
+
+        # Choose whether to load next Questions automatically or 
+        # press enter to move to the next question
+        # MAET = menuAutoExplanationTransition
+        self.lightningRoundsSettings["MAET"] = 0
+
+        # Choose whether to repeat quesions in a session
+        # MRQ = menuRepeatedQuestions
+        self.lightningRoundsSettings["MRQ"] = 1
+
+
 def printi(pp,customPrintSpe):
     customPrintSpeed = customPrintSpe * 1
     newLineLowSpeed = 0.5 * customPrintSpeed
@@ -1369,7 +1384,7 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     #print(questionTimeLimitList)
     #print(len(questionTimeLimitList))
     myQuestionLimit = len(questionTimeLimitList) * 0.1
-    if noTimeConstrait == False:
+    if noTimeConstrait == 0:
         print("You have exactly " +  str(round(myQuestionLimit,3)) + " seconds to answer.")
     print("\n")
     #Ask the question
@@ -1383,7 +1398,7 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     timedifference = endtime - startime
     randomtextaws = ""
     passed = -1
-    if toBeExplained == True:
+    if toBeExplained == 1:
         #theExplainer(q.explanation)
         whatIsCorrect = "Correct Answer = " + ", ".join(answer)
         print(whatIsCorrect)
@@ -1391,7 +1406,7 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     if correctionCheck(list(myans),allAnswerStack,q.answer) == True:
         print("\nYou are correct :)\n")
 
-        if timedifference < myQuestionLimit or noTimeConstrait == True:
+        if timedifference < myQuestionLimit or noTimeConstrait == 1:
             passed = 1
         else:
             print("However you took too long to answer so it will count as incorrect")
@@ -1399,18 +1414,18 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
             randomtextaws = str(round(timedifference,3)) + " seconds out of the given " + str(round(myQuestionLimit,3)) + " seconds"
             print(randomtextaws)
             #print("")
-            if autoskipper == True:
+            if autoskipper == 1:
                 time.sleep(random.uniform(lowerWait,higherWait))
     else:
         print("\nYou are Wrong :(\n")
     
-    if toBeExplained == True:
+    if toBeExplained == 1:
         #theExplainer(q.explanation)
         #whatIsCorrect = "Correct Answer = " + ", ".join(answer)
         #print(whatIsCorrect)
         print("\nExplanation\n")
         theExplainer(q.explanation)
-        if autoskipper == True:
+        if autoskipper == 1:
             explaWait = []
             explaWait.extend(q.explanation)
             explaWaitTime = len(explaWait) * explanationReadSpeed
