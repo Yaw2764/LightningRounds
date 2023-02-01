@@ -22,6 +22,8 @@ Completed Items Here >>>>>
 >>>>>  Questions must be in order or random = change the self.lightningRoundsSettings["RQR"] in TheFile 
 """
 
+# When a Semi Parsed file is used for the first time it does not create anything
+
 # Ability to reset the entire data  totalReset
 
 # combination of tags from menu
@@ -51,6 +53,8 @@ Completed Items Here >>>>>
 #       >>>>> For actual Quesion parsing with abcd
 #       >>>>> For Fully Processed Quesions with tally total correct and wrong
 #       >>>>> For Semi Processed Questions without tally total correct and wrong
+
+#       >>>>> FOR SOME REASON IF THERE ARE TWO IN THE FOLDER IT DOES NOT GIVE ANY OPTIONS TO PICK ONE
 
 class Question:
     def __init__(self,ts,qs,a,o,e,t,c,w,tl):
@@ -272,12 +276,15 @@ class TheFile:
         # The Menu Dictionary
         self.lightningRoundsSettings = {}
 
+        self.settingsDefault()
+
         # Goes through the file and retrieves the questions
         self.allthrough(self.obj)
     
         # Goes through the Questions created from the above function
         # To bring out the tags
         self.tagCleanUp(self.taglist)
+        self.saveTheSystem()
 
 
     def checktesting(self):
@@ -323,6 +330,8 @@ class TheFile:
                 self.tagNumberOfQuestionsWrong[i] += theQQ.wrong
             if self.systemBoot == 0:
                 self.tagBucket[i] = self.tagBadBucket[i]
+            #print(self.tagNumberOfQuestions[i])
+            #print(tallyLimiterFloat)
             self.tagCompletion[i] = (self.tagTally[i] + 0.00000) / (self.tagNumberOfQuestions[i] * tallyLimiterFloat)
 
     def theWelcome(self,type):
@@ -798,7 +807,7 @@ class TheFile:
         print(myindex)
 
     def fullParser(self,lines):
-        #print("in Full")
+        print("in Full")
         spl = []
         question = ""
         tags = []
@@ -902,41 +911,47 @@ class TheFile:
                     myindex +=1
 
     def allthrough(self,lines):
-        # Controls loop for finding parse Type
-        typeLoopControl = True
 
         # Uses counter to determine type while looping
         # looping through typeDeterminantList
         typeCounter = 0
 
+        # This will be the final count max Determinant
+        finalTypeCount =0
+
+        # Controls loop for finding parse Type
         # Index used to go through the lines of file
         lineIndex = 0
+
         # Key characters used to determine type of parse
         typeDeterminantList = ['_','!','?','+','%']
 
         # Use while loop to break when type is found
-        while typeLoopControl == True:
+        while lineIndex <=10:
             
             # If the line is not empty
             if len(list(lines[lineIndex]))>0:
-                typeLoopControl = False
+                
                 # Loop through line of the file to find and 
                 # count number of key characters found to determine type
                 for tdl in typeDeterminantList:
                     if tdl in lines[lineIndex]:
                         typeCounter+=1
-                
-                # Chooses the type of parse based on amount of 
-                # Key characters found
-                if typeCounter <2:
-                    self.rawParser(lines)
-                else:
-                    if typeCounter > 3:
-                        self.fullParser(lines)
-                    else:
-                        self.semiParser(lines)
+                if typeCounter >= finalTypeCount:
+                    finalTypeCount = typeCounter
                 typeCounter = 0
-            lineIndex+=1        
+            lineIndex+=1
+
+        # Chooses the type of parse based on amount of 
+        # Key characters found
+        if finalTypeCount <2:
+            #print(lines[lineIndex])
+            self.rawParser(lines)
+        else:
+            if finalTypeCount > 3:
+                self.fullParser(lines)
+            else:
+                self.semiParser(lines)     
 
     def oldAllthrough(self,lines):
         ilimi = 0
@@ -1118,6 +1133,7 @@ class TheFile:
 
     def saveTheSystem(self):
         ssd = []
+        #print(self.theSaveDirectoryPath)
         for i in self.qs:
             ssd.append(i.saveString(self.theSaveDirectoryPath))
         ss = "\n".join(ssd)
@@ -1125,6 +1141,7 @@ class TheFile:
         file1.write(ss)
         #print(ss)
         return 0
+    
 
     def moreQuestions(self,moreQ):
         self.allthrough(moreQ)
