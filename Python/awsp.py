@@ -284,7 +284,17 @@ class TheFile:
         # Goes through the Questions created from the above function
         # To bring out the tags
         self.tagCleanUp(self.taglist)
+        #print(self.taglist)
         self.saveTheSystem()
+
+        #My name
+        self.myName = ""
+
+        #Complements
+        self.complements = ["You are correct :)", "That is right, Awesome!"]
+
+        #Encouragements
+        self.encouragements = ["That is not correct unfortunately :(", "Try again :("]
 
 
     def checktesting(self):
@@ -336,9 +346,9 @@ class TheFile:
 
     def theWelcome(self,type):
         if type == 0:
-            print("\n\nWelcome to AWS Training\n")
+            print("\n\n Hi " +self.myName+ " \nWelcome to AWS Training\n\n")
         else:
-            print("\n\nWelcome Back\n")
+            print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome Back "+ self.myName+ "\n\n")
         tagLimit = len(self.taglist)
         i = 0
         completo = 0.2
@@ -368,7 +378,7 @@ class TheFile:
             theMenu+= "%"
             i+=1
             columnStacker.append(theMenu)
-            if len(columnStacker) == self.lightningRoundsSettings["MCL"]:
+            if len(columnStacker) == self.lightningRoundsSettings["MCL"] or ((tagLimit - i) == 0 and len(columnStacker) > 0):
                 print("      ".join(columnStacker))
                 #printi("      ".join(columnStacker),self.lightningSpeed)
                 print("")
@@ -434,12 +444,12 @@ class TheFile:
         i = 0
 
         if i == 0:
-            print(self.tagBucket[tag])
+            #print(self.tagBucket[tag])
             #print(len(self.tagBucket))
             #print(bagWeight)
-            print(randomOrNotBuild)
-            print(len(randomOrNotBuild))
-            print(len(self.tagBucket[tag]))
+            #print(randomOrNotBuild)
+            #print(len(randomOrNotBuild))
+            #print(len(self.tagBucket[tag]))
             while i < bagWeight:
                 theHeatTemparature = self.tagBucket[tag][randomOrNotBuild[i]]
                 i+=1
@@ -452,9 +462,13 @@ class TheFile:
             if i < 0:
                 return 0
             theHeatTemparature = 0
+            '''
             if len(self.tagBucket) <= i:
                 print(len(self.tagBucket))
                 print(i)
+                print(self.tagBucket)
+                print("Self.tagbucket is less than or equal to index")
+                print("The Bag Weight is"+ bagWeight)
                 #print(randomOrNotBuild[i])
                 exit()
             if len(self.tagBucket[tag]) <= randomOrNotBuild[i]:
@@ -467,10 +481,11 @@ class TheFile:
                 #print(i)
                 print(len(randomOrNotBuild))
                 exit()
+                '''
             theHeatTemparature = self.tagBucket[tag][randomOrNotBuild[i]]
             if theHeatTemparature not in myDoneBucket:
                 theHeat = self.qs[theHeatTemparature]
-                theFire = askingAWS(theHeat,self.lightningRoundsSettings["LS"],self.lightningRoundsSettings["ET"],self.lightningRoundsSettings["MAET"],self.lightningRoundsSettings["NTC"],i,qLimit+1,tag)
+                theFire = askingAWS(theHeat,self.lightningRoundsSettings["LS"],self.lightningRoundsSettings["ET"],self.lightningRoundsSettings["MAET"],self.lightningRoundsSettings["NTC"],i,qLimit+1,tag,self.complements,self.encouragements)
                 self.doneBucket.append(theHeatTemparature)
                 verd = self.theVerdict(theHeat,theFire,tag)
                 self.tagCleanUp([tag])
@@ -490,7 +505,6 @@ class TheFile:
                 printi("Loading Next Question, Please Wait \n\n",self.lightningRoundsSettings["LS"])
             self.saveTheSystem()
             i+=1
-
         self.systemBoot = 0
         self.tagCleanUp([tag])
 
@@ -807,7 +821,7 @@ class TheFile:
         print(myindex)
 
     def fullParser(self,lines):
-        print("in Full")
+        #print("in Full")
         spl = []
         question = ""
         tags = []
@@ -1134,6 +1148,7 @@ class TheFile:
     def saveTheSystem(self):
         ssd = []
         #print(self.theSaveDirectoryPath)
+        #exit()
         for i in self.qs:
             ssd.append(i.saveString(self.theSaveDirectoryPath))
         ss = "\n".join(ssd)
@@ -1304,18 +1319,18 @@ class TheFile:
         # 1 = Fast
         # 2 = Slow
         # LS = lightningSpeed
-        self.lightningRoundsSettings["LS"] = 0
+        self.lightningRoundsSettings["LS"] = 1
 
         # Specify the number of question
         # 0 = Asked after every selection
         # > 0 = Use the specified amount instead
         # SNCQ = specifiedNumberChoiceOfQuestions
-        self.lightningRoundsSettings["SNCQ"] = 20
+        self.lightningRoundsSettings["SNCQ"] = 12
 
         # Exam Time Constraint which times how long
         # the user has to answer a question
         # NTC = noTimeConstraint
-        self.lightningRoundsSettings["NTC"] = 1
+        self.lightningRoundsSettings["NTC"] = 0
 
         # Amount of Columns to Choose from:
         # MCL = menuColoumnLimit
@@ -1345,7 +1360,7 @@ def printi(pp,customPrintSpe):
                 time.sleep(random.uniform(newLineLowSpeed,newLineHighSpeed))
             else:
                 time.sleep(random.uniform(0,lineSpeed))
-def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumber,theWeight,theTaggg):
+def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumber,theWeight,theTaggg,complement,encourage):
     print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
     lowerWait = 0.3 * (1 + waitSpeed)
     higherWait = 1 * (1 + waitSpeed)
@@ -1357,11 +1372,12 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     print("\n\n")
     startime = time.time()
     #print(q.question)
-    quesSplit = q.question.split(".")
+    #quesSplit = q.question.split("..")
     print("[" + str(questionNumber+1)+"/"+str(theWeight)+"]"+"   "+theTaggg+"\n")
-    for ee in quesSplit:
-        print(specialBackwardTranslator(ee))
-    print("\n")
+    #for ee in quesSplit:
+        #print(specialBackwardTranslator(ee))
+    #print("\n")
+    theExplainer(q.question)
     generatedOptions = []
     generatedOptions.extend(q.options)
     #generatedOptions.extend(q.answer)
@@ -1375,11 +1391,24 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     optnumber = ['1','2','3','4','5','6','7','8','9',"10","11","12","13","14","15","16"]
     optlistindex = 0
 
+    # Complements
+    complementMe = []
+    complementMe.extend(complement)
+    compMe = random.shuffle(complementMe)
+    compMe = complementMe
+
+    # Encouragements
+    encourageMe = []
+    encourageMe.extend(encourage)
+    encoMe = random.shuffle(encourageMe)
+    encoMe = encourageMe
+
     questionTimeLimitList = []
     questionTimeLimitList.extend(q.question)
     allAnswerStack = []
 
     # Find the answer withing the options
+    print("\nPlease Choose from the following Options:\n------------------------------------------------------------\n")
     for i in opto:
         choice = optList[optlistindex]
         choicesmall = optlist[optlistindex]
@@ -1396,13 +1425,18 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
             allAnswerStack.append(choicesmall)
             allAnswerStack.append(choicenumber)
         optlistindex+=1
-    print("\n")
+        #print("\n")
+    print("\n------------------------------------------------------------\n")
     #!!!
     #print(questionTimeLimitList)
     #print(len(questionTimeLimitList))
     myQuestionLimit = len(questionTimeLimitList) * 0.1
     if noTimeConstrait == 0:
-        print("You have exactly " +  str(round(myQuestionLimit,3)) + " seconds to answer.")
+        if myQuestionLimit <61:
+            print("You have exactly " +  str(round(myQuestionLimit,3)) + " seconds to answer.")
+        else:
+            print("You have exactly " +  str(round(myQuestionLimit/60,3)) + " minutes to answer.")
+
     print("\n")
     #Ask the question
     whatToAsk = "What is your answer = "
@@ -1416,12 +1450,12 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
     randomtextaws = ""
     passed = -1
     if toBeExplained == 1:
-        #theExplainer(q.explanation)
-        whatIsCorrect = "Correct Answer = " + ", ".join(answer)
+        print("\n\t\tYour Answer = " + myans)
+        whatIsCorrect = "\t\tThe Correct Answer = " + ", ".join(answer)
         print(whatIsCorrect)
 
     if correctionCheck(list(myans),allAnswerStack,q.answer) == True:
-        print("\nYou are correct :)\n")
+        print("\n\t\t"+compMe[0]+"\n")
 
         if timedifference < myQuestionLimit or noTimeConstrait == 1:
             passed = 1
@@ -1434,13 +1468,12 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
             if autoskipper == 1:
                 time.sleep(random.uniform(lowerWait,higherWait))
     else:
-        print("\nYou are Wrong :(\n")
+        print("\n"+encoMe[0]+"\n")
     
     if toBeExplained == 1:
-        #theExplainer(q.explanation)
         #whatIsCorrect = "Correct Answer = " + ", ".join(answer)
         #print(whatIsCorrect)
-        print("\nExplanation\n")
+        print("\nAnswer Explanation:\n------------------------------------------------------------\n")
         theExplainer(q.explanation)
         if autoskipper == 1:
             explaWait = []
@@ -1455,7 +1488,7 @@ def askingAWS(q,waitSpeed,toBeExplained,autoskipper,noTimeConstrait,questionNumb
             else:
                 myans = askingAWSP3(whatToAsk)
             
-
+    print("\n------------------------------------------------------------\n")
     return passed
 
 def correctionCheck(theInputs,theRealAnswers,finalAnswer):
@@ -1646,7 +1679,7 @@ def readingTheFile():
     return 0
 
 def theExplainer(theexp):
-    dotsplit = specialBackwardTranslator(theexp).split(".")
+    dotsplit = specialBackwardTranslator(theexp).split("..")
     for dots in dotsplit:
         if len(dots.split(",,")) >= 1:
             commasplit = dots.split(",,")[1:]
